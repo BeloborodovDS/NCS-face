@@ -29,4 +29,8 @@ demo:
 	-lopencv_video \
 	-lmvnc \
 	`pkg-config opencv --cflags --libs` 
+profile: graph
+	cd models/face; \
+	mvNCProfile yolo-face-fix.prototxt -w yolo-face.caffemodel -s 12; \
+	cd ../..
 
