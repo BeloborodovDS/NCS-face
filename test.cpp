@@ -59,7 +59,7 @@ int main()
     //Get graph file size and data
     int graphSize=0;
     void* graphData=NULL;
-    graphData = readGraph("./models/empty/graph", &graphSize);
+    graphData = readGraph("./models/face/graph", &graphSize);
     
     if (graphData==NULL)
     {
