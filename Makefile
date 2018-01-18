@@ -23,7 +23,7 @@ demo:
 	-I/usr/include \
 	-L/usr/lib/x86_64-linux-gnu \
 	-L/usr/local/lib \
-	test.cpp fp16.c \
+	test.cpp fp16.c detection_layer.c \
 	-o test \
 	-lopencv_core -lopencv_imgproc -lopencv_highgui \
 	-lopencv_video \

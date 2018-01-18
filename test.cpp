@@ -7,12 +7,14 @@
 //Neural compute stick
 #include <mvnc.h>
 #include "./fp16.h"
+#include "./detection_layer.h"
 
 using namespace std;
 using namespace cv;
 
 #define NETWORK_INPUT_SIZE 448
 
+//read whole graph file into buffer, return pointer to buffer, set filesize
 void* readGraph(const char* filename, int* filesize)
 {
     ifstream file(filename, ios::binary);
@@ -47,6 +49,7 @@ int main()
         cout<<"Cannot find NCS device, status: "<<ncsCode<<endl;
         return 0;
     }
+    cout<<"Found device named "<<ncsName<<endl;
     
     //Open NCS device via its name
     ncsCode = mvncOpenDevice(ncsName, &ncsDevice);
@@ -67,6 +70,7 @@ int main()
       return 0;
     }
     
+    //Allocate computational graph
     void* ncsGraph;
     ncsCode = mvncAllocateGraph(ncsDevice, &ncsGraph, graphData, graphSize);
     if (ncsCode != MVNC_OK)
@@ -131,7 +135,15 @@ int main()
 	float* result = new float[nres];
 	fp16tofloat(result, (unsigned char*)result16f, nres);
 	
-	cout<<nres<<endl;
+	//get boxes and probs and draw them
+	vector<Rect> rects;
+	vector<float> probs;
+	get_detection_boxes(result, NETWORK_INPUT_SIZE, NETWORK_INPUT_SIZE, 0.2, probs, rects);
+	for (int i=0; i<rects.size(); i++)
+	{
+	    if (probs[i]>0)
+	      rectangle(frame, rects[i], Scalar(0,0,255,probs[i]));
+	}
 	
 	delete [] result;
 	
@@ -158,7 +170,7 @@ int main()
     ncsDevice = NULL;
     if (ncsCode != MVNC_OK)
     {
-        cout<<"Cannot find NCS device, status: "<<ncsCode<<endl;
+        cout<<"Cannot close NCS device, status: "<<ncsCode<<endl;
     }
     
     //clear graph data
