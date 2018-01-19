@@ -109,6 +109,7 @@ int main()
 	if (frame.channels()==4)
 	  cvtColor(frame, frame, CV_BGRA2BGR);
 	resize(frame, frame, Size(NETWORK_INPUT_SIZE, NETWORK_INPUT_SIZE));
+	cvtColor(frame, frame, CV_BGR2RGB);
 	flip(frame, frame, 1);
 	frame.convertTo(frame, CV_32F, 1/255.0);
         
@@ -138,11 +139,11 @@ int main()
 	//get boxes and probs and draw them
 	vector<Rect> rects;
 	vector<float> probs;
-	get_detection_boxes(result, NETWORK_INPUT_SIZE, NETWORK_INPUT_SIZE, 0.2, probs, rects);
+	get_detection_boxes(result, NETWORK_INPUT_SIZE, NETWORK_INPUT_SIZE, 0.2, probs, rects); //0.2
 	for (int i=0; i<rects.size(); i++)
 	{
 	    if (probs[i]>0)
-	      rectangle(frame, rects[i], Scalar(0,0,255,probs[i]));
+	      rectangle(frame, rects[i], Scalar(0,0,255));
 	}
 	
 	delete [] result;
