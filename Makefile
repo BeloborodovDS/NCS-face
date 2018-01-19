@@ -22,10 +22,10 @@ graph: convert
 	cd ../..
 demo:
 	g++ \
-	-I/usr/include \
+	-I/usr/include -I. \
 	-L/usr/lib/x86_64-linux-gnu \
 	-L/usr/local/lib \
-	test.cpp fp16.c detection_layer.c \
+	test.cpp detection_layer.c ./wrapper/fp16.c ./wrapper/ncs_wrapper.cpp \
 	-o test \
 	-lopencv_core -lopencv_imgproc -lopencv_highgui \
 	-lopencv_video \
