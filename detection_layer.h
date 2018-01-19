@@ -28,4 +28,18 @@ void get_detection_boxes(float* predictions, int w, int h, float thresh,
 			 int side=11, int num=2, int classes=1, int sqrt=1
 			);
 
+/*
+ * intersection/union
+ */
+float box_iou(cv::Rect a, cv::Rect b);
+
+/*
+ * non-maximim suppression
+ * @param boxes: bounding boxes
+ * @param probs: probabilities
+ * @param classes: number of classes
+ * @param thresh:  thresh for iou to merge boxes
+ */
+void do_nms(std::vector<cv::Rect>& boxes, std::vector<float>& probs, int classes, float thresh);
+
 #endif

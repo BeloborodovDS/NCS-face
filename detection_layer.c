@@ -34,7 +34,6 @@ void get_detection_boxes(float* predictions, int w, int h, float thresh,
             if(only_objectness)
 	    {
                 //probability of (any) object
-		//probs[index][0] = scale;
 	        probs.push_back(scale);
             }
             else
@@ -44,10 +43,42 @@ void get_detection_boxes(float* predictions, int w, int h, float thresh,
 		{
 		    int class_index = i*classes;
 		    float prob = scale*predictions[class_index+j];
-		    //probs[index][j] = (prob > thresh) ? prob : 0;
 		    probs.push_back( (prob > thresh) ? prob : 0);
 		}
 	    }
+        }
+    }
+}
+
+float box_iou(cv::Rect a, cv::Rect b)
+{
+    float s1 = (a & b).area();
+    return s1 / (a.area() + b.area() - s1);
+}
+
+void do_nms(std::vector<cv::Rect>& boxes, std::vector<float>& probs, int classes, float thresh)
+{
+    int i, j, k;
+    for(i = 0; i < boxes.size(); ++i)
+    {
+        int any = 0;
+        for(k = 0; k < classes; ++k) 
+	  any = any || (probs[i*classes + k] > 0);
+        if(!any)
+          continue;
+        for(j = i+1; j < boxes.size(); ++j)
+	{
+	    if (box_iou(boxes[i], boxes[j]) > thresh)
+	    {
+                //std::cout<<box_iou(boxes[i], boxes[j])<<std::endl;
+		for(k = 0; k < classes; ++k)
+		{
+                    if (probs[i*classes+k] < probs[j*classes+k]) 
+		      probs[i*classes+k] = 0;
+                    else 
+		      probs[j*classes+k] = 0;
+                }
+            }
         }
     }
 }

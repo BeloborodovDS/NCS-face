@@ -58,16 +58,20 @@ int main()
 	if(!NCS.load_tensor((float*)resized16f.data, result))
 	  break;
 	
-	//get boxes and probs and draw them
+	//get boxes and probs
 	vector<Rect> rects;
 	vector<float> probs;
-	get_detection_boxes(result, frame.cols, frame.rows, 0.2, probs, rects); //0.2
+	get_detection_boxes(result, frame.cols, frame.rows, 0.2, probs, rects); 
+	
+	//non-maximum suppression
+	do_nms(rects, probs, 1, 0.4);
+	
+	//draw boxes and render frame
 	for (int i=0; i<rects.size(); i++)
 	{
-	    if (probs[i]>0)
+	    if (probs[i]>0) 
 	      rectangle(frame, rects[i], Scalar(0,0,255));
 	}
-	
 	imshow("render", frame);
 	
         //Exit if any key pressed
