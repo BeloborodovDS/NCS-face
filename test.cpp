@@ -38,9 +38,8 @@ int main()
     float* result;
     
     //Capture-Render cycle
-    clock_t start;
     int nframes=0;
-    start = clock();
+    int64 start = getTickCount();
     for(;;)
     {
         nframes++;
@@ -79,8 +78,7 @@ int main()
     }
     
     //calculate fps
-    double time;
-    time = (clock()-start)/(double)CLOCKS_PER_SEC;
+    double time = (getTickCount()-start)/getTickFrequency();
     cout<<"Frame rate: "<<nframes/time<<endl;
     
 }
