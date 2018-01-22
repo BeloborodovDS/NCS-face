@@ -47,6 +47,7 @@ WORKDIR /workspace
 
 RUN pip install http://download.pytorch.org/whl/cpu/torch-0.3.0.post4-cp27-cp27mu-linux_x86_64.whl
 RUN pip install --no-deps torchvision 
+
 RUN git clone https://github.com/marvis/pytorch-caffe-darknet-convert.git
 RUN mkdir data
 

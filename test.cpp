@@ -56,12 +56,21 @@ int main()
 	resized.convertTo(resized16f, CV_32F, 1/255.0);
         
 	if(!NCS.load_tensor((float*)resized16f.data, result))
+	{
+	  if (NCS.ncsCode == MVNC_MYRIAD_ERROR)
+	  {
+	    char* err;
+	    unsigned int len;
+	    mvncGetGraphOption(NCS.ncsGraph, MVNC_DEBUG_INFO, (void*)&err, &len);
+	    cout<<string(err, len)<<endl;
+	  }
 	  break;
+	}
 	
 	//get boxes and probs
 	vector<Rect> rects;
 	vector<float> probs;
-	get_detection_boxes(result, frame.cols, frame.rows, 0.2, probs, rects); 
+	get_detection_boxes(result, frame.cols, frame.rows, 0.2, probs, rects);
 	
 	//non-maximum suppression
 	do_nms(rects, probs, 1, 0.4);

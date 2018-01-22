@@ -10,8 +10,8 @@ convert:
 	#4) go back
 	cd models/face; \
 	sudo docker run -v `pwd`:/workspace/data \
-	-u `id -u` -ti dlconverter:latest \
-	bash -c "python ./pytorch-caffe-darknet-convert/darknet2caffe.py \
+	-u `id -u` -ti dlconverter:latest bash -c \
+	"python ./pytorch-caffe-darknet-convert/darknet2caffe.py \
 	./data/yolo-face.cfg ./data/yolo-face_final.weights \
 	./data/yolo-face.prototxt ./data/yolo-face.caffemodel"; \
 	python ../../utils/fix_proto_input_format.py yolo-face.prototxt yolo-face-fix.prototxt; \
