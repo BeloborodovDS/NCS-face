@@ -7,12 +7,14 @@ Model is converted from Darknet to Caffe format with <a href="https://github.com
 To build and run this demo <a href="https://developer.movidius.com/start" target="_blank">NCSDK</a>, Docker and OpenCV are needed.
 
 1. Download model (.cfg and .weights) from <a href="https://github.com/dannyblueliu/YOLO-version-2-Face-detection" target="_blank">here</a> into `models/face`.
+
 2. Compile Docker image with converter:
 ~~~
 cd utils
 sudo docker build -t dlconverter .
 ~~~
 (this is just a hack, you can try to clone converter repo and run the script instead)
+
 3. build and run demo
 ~~~
 make
