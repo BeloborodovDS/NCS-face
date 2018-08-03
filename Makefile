@@ -20,6 +20,10 @@ graph: convert
 	cd models/face; \
 	mvNCCompile -s 12 -o graph -w yolo-face.caffemodel yolo-face-fix.prototxt; \
 	cd ../..
+graph_ssd:
+	cd models/face; \
+	mvNCCompile -s 12 -o graph_ssd -w ssd-face.caffemodel ssd-face.prototxt; \
+	cd ../..
 demo:
 	g++ \
 	-I/usr/include -I. \
@@ -31,6 +35,17 @@ demo:
 	-lopencv_video \
 	-lmvnc \
 	`pkg-config opencv --cflags --libs` 
+demo_ssd:
+	g++ \
+	-I/usr/include -I. \
+	-L/usr/lib/x86_64-linux-gnu \
+	-L/usr/local/lib \
+	ssd.cpp ./wrapper/fp16.c ./wrapper/ncs_wrapper.cpp \
+	-o test \
+	-lopencv_core -lopencv_imgproc -lopencv_highgui \
+	-lopencv_video \
+	-lmvnc \
+	`pkg-config opencv --cflags --libs`
 profile: convert
 	cd models/face; \
 	mvNCProfile yolo-face-fix.prototxt -w yolo-face.caffemodel -s 12; \
