@@ -20,3 +20,16 @@ sudo docker build -t dlconverter .
 make
 ./test
 ~~~
+
+## New feature: another demo with Mobilenet-SSD face detector
+
+This detector seems to be better at detection, while 2x faster and 9x smaller.
+
+See my repo for details on this detector, including training: https://github.com/BeloborodovDS/MobilenetSSDFace
+
+To run demo with this detector:
+~~~
+make graph_ssd
+make demo_ssd
+./test
+~~~
