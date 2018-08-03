@@ -1,4 +1,10 @@
 test
-models/face/*
-
+models/face/graph
+models/face/graph_ssd
+models/face/output.gv
+models/face/output.gv.svg
+models/face/output_expected.npy
+models/face/output_report.html
+models/face/yolo-face.caffemodel
+models/face/yolo-face_final.weights
 
