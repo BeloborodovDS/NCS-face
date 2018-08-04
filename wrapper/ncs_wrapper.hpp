@@ -34,6 +34,18 @@ public:
      */
     bool load_tensor(float* data, float*& output);
     
+    /* load data into NCS without waiting for result
+     * @param data: pointer to input data 
+     * @return: true if success, else false
+     */
+    bool load_tensor_nowait(float* data);
+    
+    /* get result from NCS after calling load_tensor_nowait(...)
+     * @param output: reference to pointer for output data
+     * @return: true if success, else false
+     */
+    bool get_result(float*& output);
+    
     //return code for MVNC functions
     mvncStatus ncsCode;
     //device handle

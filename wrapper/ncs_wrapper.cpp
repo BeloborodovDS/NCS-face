@@ -191,5 +191,50 @@ bool NCSWrapper::load_tensor(float* data, float*& output)
     return true;
 }
 
+bool NCSWrapper::load_tensor_nowait(float* data)
+{
+    //transform to 16f
+    floattofp16((unsigned char*)input16f, data, n_input);
+    
+    //load image to NCS
+    ncsCode = mvncLoadTensor(ncsGraph, input16f, n_input*sizeof(unsigned short), NULL);
+    if (ncsCode != MVNC_OK)
+    {
+	if (verbose)
+	  cout<<"Cannot load image to NCS, status: "<<ncsCode<<endl;
+	return false;
+    }
+    return true;
+}
+
+bool NCSWrapper::get_result(float*& output)
+{
+    //get result from NCS
+    ncsCode = mvncGetResult(ncsGraph, &result16f, &resultSize, &otherParam);
+    if (ncsCode != MVNC_OK)
+    {
+	if (verbose)
+	  cout<<"Cannot retrieve result from NCS, status: "<<ncsCode<<endl;
+	output = NULL;
+	return false;
+    }
+    
+    //Check result size
+    nres = resultSize/sizeof(unsigned short);
+    if (nres!=n_output)
+    {
+	if (verbose)
+	  cout<<"Output shape mismatch! Expected/Real: "<<n_output<<"/"<<nres<<endl;
+	output = NULL;
+	return false;
+    }
+    
+    //decode result
+    fp16tofloat(result, (unsigned char*)result16f, nres);
+    
+    output = result;
+    return true;
+}
+
 
 
