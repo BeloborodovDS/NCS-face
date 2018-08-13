@@ -24,6 +24,10 @@ graph_ssd:
 	cd models/face; \
 	mvNCCompile -s 12 -o graph_ssd -w ssd-face.caffemodel ssd-face.prototxt; \
 	cd ../..
+graph_ssd_longrange:
+	cd models/face; \
+	mvNCCompile -s 12 -o graph_ssd -w ssd-face-longrange.caffemodel ssd-face-longrange.prototxt; \
+	cd ../..
 demo:
 	g++ \
 	-I/usr/include -I. \

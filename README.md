@@ -33,3 +33,11 @@ make graph_ssd
 make demo_ssd
 ./test
 ~~~
+
+Or long-range face detector (a bit faster, for small faces only):
+~~~
+make graph_ssd_longrange
+make demo_ssd
+./test
+~~~
+
