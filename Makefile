@@ -20,6 +20,10 @@ graph: convert
 	cd models/face; \
 	mvNCCompile -s 12 -o graph -w yolo-face.caffemodel yolo-face-fix.prototxt; \
 	cd ../..
+graph_yolo:
+	cd models/face; \
+	mvNCCompile -s 12 -o graph -w yolo-face.caffemodel yolo-face-fix.prototxt; \
+	cd ../..
 graph_ssd:
 	cd models/face; \
 	mvNCCompile -s 12 -o graph_ssd -w ssd-face.caffemodel ssd-face.prototxt; \

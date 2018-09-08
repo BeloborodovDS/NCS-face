@@ -12,12 +12,24 @@ To build and run this demo <a href="https://developer.movidius.com/start" target
 ~~~
 cd utils
 sudo docker build -t dlconverter .
+cd ..
 ~~~
 (this is just a hack, you can try to clone converter repo and run the script instead)
 
 3. build and run demo
 ~~~
 make
+./test
+~~~
+
+Alternatively (skip convertion from Darknet to Caffe):
+
+1. Download converted .caffemodel from <a href="https://drive.google.com/open?id=17PgRAkMLrhFORCEqefdZEHKoPHXmduZJ" target="_blank">my Drive</a> and place it in models/face.
+
+2. Compile graph to NCS and build demo:
+~~~
+make graph_yolo
+make demo
 ./test
 ~~~
 
