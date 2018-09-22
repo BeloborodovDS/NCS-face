@@ -37,15 +37,36 @@ int main()
     Mat frame;
     Mat resized(NETWORK_INPUT_SIZE, NETWORK_INPUT_SIZE, CV_8UC3);
     Mat resized16f(NETWORK_INPUT_SIZE, NETWORK_INPUT_SIZE, CV_32FC3);
+    resized16f = Scalar(0);
+    cap >> frame; //to get size
     float* result;
     
     //Capture-Render cycle
     int nframes=0;
     int64 start = getTickCount();
+    
+    //get boxes and probs
+    vector<Rect> rects;
+    vector<float> probs;
     for(;;)
     {
         nframes++;
-      
+	
+	//load data to NCS
+	if(!NCS.load_tensor_nowait((float*)resized16f.data))
+	{
+	  NCS.print_error_code();
+	  break;
+	}
+	
+	//draw boxes and render frame
+	for (int i=0; i<rects.size(); i++)
+	{
+	    if (probs[i]>0) 
+	      rectangle(frame, rects[i], Scalar(0,0,255));
+	}
+	imshow("render", frame);
+	
 	//Get frame
         cap >> frame;
 	
@@ -56,28 +77,21 @@ int main()
 	resize(frame, resized, Size(NETWORK_INPUT_SIZE, NETWORK_INPUT_SIZE));
 	cvtColor(resized, resized, CV_BGR2RGB);
 	resized.convertTo(resized16f, CV_32F, 1/255.0);
-        
-	if(!NCS.load_tensor((float*)resized16f.data, result))
+	
+	//get result from NCS
+	if(!NCS.get_result(result))
 	{
 	  NCS.print_error_code();
 	  break;
 	}
-	
-	//get boxes and probs
-	vector<Rect> rects;
-	vector<float> probs;
+        
+        //get boxes and probs
+        probs.clear();
+	rects.clear();
 	get_detection_boxes(result, frame.cols, frame.rows, 0.2, probs, rects);
 	
 	//non-maximum suppression
 	do_nms(rects, probs, 1, 0.4);
-	
-	//draw boxes and render frame
-	for (int i=0; i<rects.size(); i++)
-	{
-	    if (probs[i]>0) 
-	      rectangle(frame, rects[i], Scalar(0,0,255));
-	}
-	imshow("render", frame);
 	
         //Exit if any key pressed
         if (waitKey(1)!=-1)
