@@ -1,13 +1,48 @@
 # Face detection demo for Movidius Neural Compute Stick
 
 ### NOTE
-This project was upgraded to use NCSDK v2, which is not backward-compatible. Files for compiling with NCSDK v1 are also provided: you will have to edit inclusion of header files in demo .cpp files, as well as WRAPPER_FILES variable in Makefile
+This project was upgraded to use NCSDK v2, which is not backward-compatible. Files for compiling with NCSDK v1 are also provided: you will have to edit `#include <./wrapper/ncs_wrapper.hpp>` in `yolo.cpp` and `ssd.cpp`, as well as `WRAPPER_FILES` variable in `Makefile`.
 
-This project is a C++ face detection demo for NCS, with <a href="https://github.com/dannyblueliu/YOLO-version-2-Face-detection" target="_blank">YOLO2 model</a>.
+## Intro
 
-Model is converted from Darknet to Caffe format with <a href="https://github.com/marvis/pytorch-caffe-darknet-convert" target="_blank">Pytorch\Caffe\Darknet converter</a> and then compiled for NCS.
+This project is a C++ face detection demo for NCS, with different models: 
+* <a href="https://github.com/BeloborodovDS/MobilenetSSDFace" target="_blank"> My Mobilenet-SSD models</a>
+* <a href="https://github.com/dannyblueliu/YOLO-version-2-Face-detection" target="_blank"> YOLO v2 model </a> 
 
-To build and run this demo <a href="https://developer.movidius.com/start" target="_blank">NCSDK</a>, Docker and OpenCV are needed.
+
+To build and run this demo <a href="https://developer.movidius.com/start" target="_blank">NCSDK</a> and OpenCV are needed.
+
+| Model 		| FPS (Core i3) |
+|---			|---		|
+|Mobilenet-SSD		|10.4		|
+|Mobilenet-SSD longrange|11.4		|
+|YOLO v2		|5.1		|
+
+## Mobilenet-SSD
+
+To run Mobilenet-SSD face detection demo:
+~~~
+make graph_ssd
+make demo_ssd
+./demo
+~~~
+
+or simply
+~~~
+make
+./demo
+~~~
+
+Or with long-range face detector (pruned, a bit faster, for small faces only):
+~~~
+make graph_ssd_longrange
+make demo_ssd
+./demo
+~~~
+
+## YOLO v2
+
+Model is converted from Darknet to Caffe format with <a href="https://github.com/marvis/pytorch-caffe-darknet-convert" target="_blank">Pytorch\Caffe\Darknet converter</a> in a Docker container and then compiled for NCS. You can skip Docker conversion if you download converted model from my drive.
 
 1. Download model (.cfg and .weights) from <a href="https://github.com/dannyblueliu/YOLO-version-2-Face-detection" target="_blank">here</a> into `models/face`.
 
@@ -21,38 +56,20 @@ cd ..
 
 3. build and run demo
 ~~~
-make
-./test
+make convert_yolo
+make graph_yolo
+make demo_yolo
+./demo
 ~~~
 
-Alternatively (skip convertion from Darknet to Caffe):
+Alternatively (skip conversion from Darknet to Caffe):
 
-1. Download converted .caffemodel from <a href="https://drive.google.com/open?id=17PgRAkMLrhFORCEqefdZEHKoPHXmduZJ" target="_blank">my Drive</a> and place it in models/face.
+1. Download converted .caffemodel from <a href="https://drive.google.com/open?id=17PgRAkMLrhFORCEqefdZEHKoPHXmduZJ" target="_blank">my Drive</a> and place it in `models/face`.
 
 2. Compile graph to NCS and build demo:
 ~~~
 make graph_yolo
-make demo
-./test
-~~~
-
-## New feature: another demo with Mobilenet-SSD face detector
-
-This detector seems to be better at detection, while 2x faster and 9x smaller.
-
-See my repo for details on this detector, including training: https://github.com/BeloborodovDS/MobilenetSSDFace
-
-To run demo with this detector:
-~~~
-make graph_ssd
-make demo_ssd
-./test
-~~~
-
-Or long-range face detector (a bit faster, for small faces only):
-~~~
-make graph_ssd_longrange
-make demo_ssd
-./test
+make demo_yolo
+./demo
 ~~~
 

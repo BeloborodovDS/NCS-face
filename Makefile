@@ -4,8 +4,8 @@ WRAPPER_FILES := ./wrapper/ncs_wrapper.cpp
 #Uncomment the following line to use NCSDKv1
 #WRAPPER_FILES := ./wrapper/fp16.c ./wrapper/ncs_wrapper_v1.cpp
 
-all: graph demo
-convert:
+all: graph_ssd demo_ssd
+convert_yolo:
 	# face model is from: https://github.com/dannyblueliu/YOLO-version-2-Face-detection
 	#1) enter folder with models
 	#2) launch docker image with dl-converter, connect data directories in docker and host,
@@ -22,10 +22,6 @@ convert:
 	./data/yolo-face.prototxt ./data/yolo-face.caffemodel"; \
 	python ../../utils/fix_proto_input_format.py yolo-face.prototxt yolo-face-fix.prototxt; \
 	cd ../..
-graph: convert
-	cd models/face; \
-	mvNCCompile -s 12 -o graph -w yolo-face.caffemodel yolo-face-fix.prototxt; \
-	cd ../..
 graph_yolo:
 	cd models/face; \
 	mvNCCompile -s 12 -o graph -w yolo-face.caffemodel yolo-face-fix.prototxt; \
@@ -38,13 +34,13 @@ graph_ssd_longrange:
 	cd models/face; \
 	mvNCCompile -s 12 -o graph_ssd -w ssd-face-longrange.caffemodel ssd-face-longrange.prototxt; \
 	cd ../..
-demo:
+demo_yolo:
 	g++ \
 	-I/usr/include -I. \
 	-L/usr/lib/x86_64-linux-gnu \
 	-L/usr/local/lib \
-	test.cpp detection_layer.c $(WRAPPER_FILES) \
-	-o test \
+	yolo.cpp detection_layer.c $(WRAPPER_FILES) \
+	-o demo \
 	-lopencv_core -lopencv_imgproc -lopencv_highgui \
 	-lopencv_video \
 	-lmvnc \
@@ -55,7 +51,7 @@ demo_ssd:
 	-L/usr/lib/x86_64-linux-gnu \
 	-L/usr/local/lib \
 	ssd.cpp $(WRAPPER_FILES) \
-	-o test \
+	-o demo \
 	-lopencv_core -lopencv_imgproc -lopencv_highgui \
 	-lopencv_video \
 	-lmvnc \
@@ -64,4 +60,3 @@ profile: convert
 	cd models/face; \
 	mvNCProfile yolo-face-fix.prototxt -w yolo-face.caffemodel -s 12; \
 	cd ../..
-
