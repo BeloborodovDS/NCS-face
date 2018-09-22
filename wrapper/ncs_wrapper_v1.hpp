@@ -51,24 +51,26 @@ public:
     void print_error_code();
     
     //return code for MVNC functions
-    ncStatus_t ncsCode;
+    mvncStatus ncsCode;
     //device handle
-    ncDeviceHandle_t* ncsDevice;
+    void* ncsDevice;
+    //device name
+    char* ncsName;
     //graph file size
     unsigned int graphSize;
     //graph file buffer
     void* graphData;
     //graph handle
-    ncGraphHandle_t* ncsGraph;
-    //FIFO structures for NCS input and output data
-    ncFifoHandle_t* ncsInFifo;
-    ncFifoHandle_t* ncsOutFifo;
+    void* ncsGraph;
     //result size in bytes
     unsigned int resultSize;
-    unsigned int inputSize;
+    //result buffer (float 16)
+    void* result16f;
     //user parameters
     void* otherParam;
-    //num of result outputs
+    //input buffer (float 16) 
+    void* input16f;
+    //number of obtained outputs
     unsigned int nres;
     //result buffer (float)
     float* result;

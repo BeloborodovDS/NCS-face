@@ -1,5 +1,8 @@
 # Face detection demo for Movidius Neural Compute Stick
 
+### NOTE
+This project was upgraded to use NCSDK v2, which is not backward-compatible. Files for compiling with NCSDK v1 are also provided: you will have to edit incusion of header files in demo .cpp files, as well as WRAPPER_FILES variable in Makefile
+
 This project is a C++ face detection demo for NCS, with <a href="https://github.com/dannyblueliu/YOLO-version-2-Face-detection" target="_blank">YOLO2 model</a>.
 
 Model is converted from Darknet to Caffe format with <a href="https://github.com/marvis/pytorch-caffe-darknet-convert" target="_blank">Pytorch\Caffe\Darknet converter</a> and then compiled for NCS.

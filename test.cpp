@@ -7,6 +7,8 @@
 //Neural compute stick
 #include <mvnc.h>
 #include "./detection_layer.h"
+
+//to use NCSDKv1, replace this file by ncs_wrapper_v1.hpp
 #include <./wrapper/ncs_wrapper.hpp>
 
 using namespace std;
@@ -57,13 +59,7 @@ int main()
         
 	if(!NCS.load_tensor((float*)resized16f.data, result))
 	{
-	  if (NCS.ncsCode == MVNC_MYRIAD_ERROR)
-	  {
-	    char* err;
-	    unsigned int len;
-	    mvncGetGraphOption(NCS.ncsGraph, MVNC_DEBUG_INFO, (void*)&err, &len);
-	    cout<<string(err, len)<<endl;
-	  }
+	  NCS.print_error_code();
 	  break;
 	}
 	

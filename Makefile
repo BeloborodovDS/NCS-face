@@ -1,3 +1,9 @@
+#NCSDKv2 used by default
+WRAPPER_FILES := ./wrapper/ncs_wrapper.cpp
+
+#Uncomment the following line to use NCSDKv1
+#WRAPPER_FILES := ./wrapper/fp16.c ./wrapper/ncs_wrapper_v1.cpp
+
 all: graph demo
 convert:
 	# face model is from: https://github.com/dannyblueliu/YOLO-version-2-Face-detection
@@ -37,7 +43,7 @@ demo:
 	-I/usr/include -I. \
 	-L/usr/lib/x86_64-linux-gnu \
 	-L/usr/local/lib \
-	test.cpp detection_layer.c ./wrapper/fp16.c ./wrapper/ncs_wrapper.cpp \
+	test.cpp detection_layer.c $(WRAPPER_FILES) \
 	-o test \
 	-lopencv_core -lopencv_imgproc -lopencv_highgui \
 	-lopencv_video \
@@ -48,7 +54,7 @@ demo_ssd:
 	-I/usr/include -I. \
 	-L/usr/lib/x86_64-linux-gnu \
 	-L/usr/local/lib \
-	ssd.cpp ./wrapper/fp16.c ./wrapper/ncs_wrapper.cpp \
+	ssd.cpp $(WRAPPER_FILES) \
 	-o test \
 	-lopencv_core -lopencv_imgproc -lopencv_highgui \
 	-lopencv_video \

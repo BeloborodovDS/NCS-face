@@ -1,5 +1,4 @@
 #include "ncs_wrapper.hpp"
-#include "fp16.h"
 
 #include <iostream>
 #include <fstream>
@@ -12,11 +11,11 @@ void* readGraph(const char* filename, unsigned int* filesize)
     ifstream file;
     try
     {
-      file.open(filename, ios::binary);
+        file.open(filename, ios::binary);
     }
     catch(...)
     {
-      return NULL;
+        return NULL;
     }
     
     file.seekg (0, file.end);
@@ -26,8 +25,8 @@ void* readGraph(const char* filename, unsigned int* filesize)
     char* buffer = new char[*filesize];
     if (file.read(buffer, *filesize))
     {
-	file.close();
-	return (void*)buffer;
+        file.close();
+        return (void*)buffer;
     }
     
     file.close();
@@ -40,16 +39,17 @@ NCSWrapper::NCSWrapper(unsigned int input_num, unsigned int output_num, bool is_
     n_output = output_num;
     verbose = is_verbose;
     
-    ncsCode = MVNC_OK;
+    ncsCode = NC_OK;
     ncsDevice = NULL;
-    ncsName = new char[100];
     graphSize = 0;
     graphData = NULL;
     ncsGraph = NULL;
+    ncsInFifo = NULL;
+    ncsOutFifo = NULL;
     resultSize = 0;
-    result16f = NULL;
+    inputSize = n_input * sizeof(float);
+    resultSize = n_output * sizeof(float);
     otherParam = NULL;
-    input16f = new unsigned short[n_input];
     nres = 0;
     result = new float[n_output];
     
@@ -59,90 +59,104 @@ NCSWrapper::NCSWrapper(unsigned int input_num, unsigned int output_num, bool is_
 
 NCSWrapper::~NCSWrapper()
 {
-    if(ncsName)
-      delete [] ncsName;
-    ncsName = NULL;
-    if(input16f)
-      delete [] (unsigned short*)input16f;
-    input16f = NULL;
-    if (result)
-      delete [] result;
+    if (result) 
+        delete [] result;
     result = NULL;
     
+    //deallocate graph and FIFO
     if (is_allocate)
     {
-	ncsCode = mvncDeallocateGraph(ncsGraph);
-	ncsGraph = NULL;
-	if (ncsCode != MVNC_OK)
-	{
-	    if (verbose)
-	      cout<<"Cannot deallocate graph: "<<ncsCode<<endl;
-	}
+        if (ncsInFifo)
+        {
+            ncFifoDestroy(&ncsInFifo);
+            ncsInFifo = NULL;
+        }
+        if (ncsOutFifo)
+        {
+            ncFifoDestroy(&ncsOutFifo);
+            ncsOutFifo = NULL;
+        }
+        if (ncsGraph)
+        {
+            ncGraphDestroy(&ncsGraph); 
+            ncsGraph = NULL;
+        }
     }
     
-    if (is_init)
+    //free device
+    if (is_init && ncsDevice)
     {
-	ncsCode = mvncCloseDevice(ncsDevice);
-	ncsDevice = NULL;
-	if (ncsCode != MVNC_OK)
-	{
-	    if (verbose)
-	      cout<<"Cannot close NCS device, status: "<<ncsCode<<endl;
-	}
+        ncDeviceClose(ncsDevice);
+        ncDeviceDestroy(&ncsDevice);
+        ncsDevice = NULL;
     }    
     
-    if(graphData)
-      delete [] (char*)graphData;
-    graphData = NULL;
-    
+    otherParam = NULL;
 }
 
 bool NCSWrapper::load_file(const char* filename)
 {
     //Get NCS name
-    ncsCode = mvncGetDeviceName(0, ncsName, 100);
-    if (ncsCode != MVNC_OK)
+    ncsCode = ncDeviceCreate(0, &ncsDevice);
+    if (ncsCode != NC_OK)
     {
         if (verbose)
-	  cout<<"Cannot find NCS device, status: "<<ncsCode<<endl;
+            cout<<"Cannot find NCS device, status: "<<ncsCode<<endl;
         return false;
     }
     if (verbose)
-      cout<<"Found device named "<<ncsName<<endl;
+        cout<<"Found device No 0 "<<endl;
     
     //Open NCS device via its name
-    ncsCode = mvncOpenDevice(ncsName, &ncsDevice);
-    if (ncsCode != MVNC_OK)
+    ncsCode = ncDeviceOpen(ncsDevice);
+    if (ncsCode != NC_OK)
     {  
         if (verbose)
-	  cout<<"Cannot open NCS device, status: "<<ncsCode<<endl;
+            cout<<"Cannot open NCS device, status: "<<ncsCode<<endl;
         return false;
     }
     if (verbose)
-      cout<<"Successfully opened device\n";
+        cout<<"Successfully opened device 0\n";
     is_init = true;
     
     //Get graph file size and data
     graphData = readGraph(filename, &graphSize);
     if (graphData==NULL)
     {
-	if (verbose)
-	  cout<<"Cannot open graph file\n";
-	return false;
+        if (verbose)
+            cout<<"Cannot open graph file\n";
+        return false;
     }
     if (verbose)
       cout<<"Successfully loaded graph file, size is: "<<graphSize<<endl;
     
-    //Allocate computational graph
-    ncsCode = mvncAllocateGraph(ncsDevice, &ncsGraph, graphData, graphSize);
-    if (ncsCode != MVNC_OK)
+    //Create computational graph
+    ncsCode = ncGraphCreate("ncs_wrapper_graph", &ncsGraph);
+    if (ncsCode != NC_OK)
     {
         if (verbose)
-	  cout<<"Cannot allocate graph, status: "<<ncsCode<<endl;
-	return false;
+            cout<<"Cannot create graph, status: "<<ncsCode<<endl;
+        return false;
     }
+    
+    //Allocate graph on NCS with input-output FIFOs
+    ncsCode = ncGraphAllocateWithFifosEx(ncsDevice, ncsGraph, graphData, graphSize, 
+                        &ncsInFifo, NC_FIFO_HOST_WO, 1, NC_FIFO_FP32,
+                        &ncsOutFifo, NC_FIFO_HOST_RO, 1,  NC_FIFO_FP32);
+    if (ncsCode != NC_OK)
+    {
+        if (verbose)
+            cout<<"Cannot allocate graph and FIFO, status: "<<ncsCode<<endl;
+        return false;
+    }
+    
+    //raw graph data is not needed any longer
+    if(graphData)
+        delete [] (char*)graphData;
+    graphData = NULL;
+    
     if (verbose)
-      cout<<"Successfully allocated graph\n";
+        cout<<"Successfully allocated graph\n";
     is_allocate = true;
     
     return true;
@@ -150,42 +164,38 @@ bool NCSWrapper::load_file(const char* filename)
 
 
 bool NCSWrapper::load_tensor(float* data, float*& output)
-{
-    //transform to 16f
-    floattofp16((unsigned char*)input16f, data, n_input);
-    
+{    
     //load image to NCS
-    ncsCode = mvncLoadTensor(ncsGraph, input16f, n_input*sizeof(unsigned short), NULL);
-    if (ncsCode != MVNC_OK)
+    ncsCode = ncGraphQueueInferenceWithFifoElem(
+                ncsGraph, ncsInFifo, ncsOutFifo, (void*)data, &inputSize, NULL);
+    if (ncsCode != NC_OK)
     {
-	if (verbose)
-	  cout<<"Cannot load image to NCS, status: "<<ncsCode<<endl;
-	output = NULL;
-	return false;
+        if (verbose)
+            cout<<"Cannot load image to NCS, status: "<<ncsCode<<endl;
+        output = NULL;
+        return false;
     }
     
     //get result from NCS
-    ncsCode = mvncGetResult(ncsGraph, &result16f, &resultSize, &otherParam);
-    if (ncsCode != MVNC_OK)
+    resultSize = n_output * sizeof(float);
+    ncsCode = ncFifoReadElem(ncsOutFifo, (void*)result, &resultSize, &otherParam);
+    if (ncsCode != NC_OK)
     {
-	if (verbose)
-	  cout<<"Cannot retrieve result from NCS, status: "<<ncsCode<<endl;
-	output = NULL;
-	return false;
+        if (verbose)
+            cout<<"Cannot retrieve result from NCS, status: "<<ncsCode<<endl;
+        output = NULL;
+        return false;
     }
     
     //Check result size
-    nres = resultSize/sizeof(unsigned short);
+    nres = resultSize/sizeof(float);
     if (nres!=n_output)
     {
-	if (verbose)
-	  cout<<"Output shape mismatch! Expected/Real: "<<n_output<<"/"<<nres<<endl;
-	output = NULL;
-	return false;
+        if (verbose)
+            cout<<"Output shape mismatch! Expected/Real: "<<n_output<<"/"<<nres<<endl;
+        output = NULL;
+        return false;
     }
-    
-    //decode result
-    fp16tofloat(result, (unsigned char*)result16f, nres);
     
     output = result;
     return true;
@@ -193,16 +203,14 @@ bool NCSWrapper::load_tensor(float* data, float*& output)
 
 bool NCSWrapper::load_tensor_nowait(float* data)
 {
-    //transform to 16f
-    floattofp16((unsigned char*)input16f, data, n_input);
-    
     //load image to NCS
-    ncsCode = mvncLoadTensor(ncsGraph, input16f, n_input*sizeof(unsigned short), NULL);
-    if (ncsCode != MVNC_OK)
+    ncsCode = ncGraphQueueInferenceWithFifoElem(
+                ncsGraph, ncsInFifo, ncsOutFifo, (void*)data, &inputSize, NULL);
+    if (ncsCode != NC_OK)
     {
-	if (verbose)
-	  cout<<"Cannot load image to NCS, status: "<<ncsCode<<endl;
-	return false;
+        if (verbose)
+            cout<<"Cannot load image to NCS, status: "<<ncsCode<<endl;
+        return false;
     }
     return true;
 }
@@ -210,31 +218,102 @@ bool NCSWrapper::load_tensor_nowait(float* data)
 bool NCSWrapper::get_result(float*& output)
 {
     //get result from NCS
-    ncsCode = mvncGetResult(ncsGraph, &result16f, &resultSize, &otherParam);
-    if (ncsCode != MVNC_OK)
+    resultSize = n_output * sizeof(float);
+    ncsCode = ncFifoReadElem(ncsOutFifo, (void*)result, &resultSize, &otherParam);
+    if (ncsCode != NC_OK)
     {
-	if (verbose)
-	  cout<<"Cannot retrieve result from NCS, status: "<<ncsCode<<endl;
-	output = NULL;
-	return false;
+        if (verbose)
+            cout<<"Cannot retrieve result from NCS, status: "<<ncsCode<<endl;
+        output = NULL;
+        return false;
     }
     
     //Check result size
-    nres = resultSize/sizeof(unsigned short);
+    nres = resultSize/sizeof(float);
     if (nres!=n_output)
     {
-	if (verbose)
-	  cout<<"Output shape mismatch! Expected/Real: "<<n_output<<"/"<<nres<<endl;
-	output = NULL;
-	return false;
+        if (verbose)
+            cout<<"Output shape mismatch! Expected/Real: "<<n_output<<"/"<<nres<<endl;
+        output = NULL;
+        return false;
     }
-    
-    //decode result
-    fp16tofloat(result, (unsigned char*)result16f, nres);
     
     output = result;
     return true;
 }
 
-
+void NCSWrapper::print_error_code()
+{
+    cout<<"NCSWrapper error report:\n";
+    
+    if (ncsCode == NC_MYRIAD_ERROR)
+    {
+        char* err = new char [NC_DEBUG_BUFFER_SIZE];
+        unsigned int len;
+        ncGraphGetOption(ncsGraph, NC_RO_GRAPH_DEBUG_INFO, err, &len);
+        cout<<"MYRIAD ERROR:\n";
+        cout<<string(err, len)<<endl;
+        delete [] err;
+    }
+    else if (ncsCode == NC_OK)
+    {
+        cout<<"Everything is fine, no error\n";
+    }
+    else if (ncsCode == NC_BUSY)
+    {
+        cout<<"NCS is busy\n";
+    }
+    else if (ncsCode == NC_ERROR)
+    {
+        cout<<"UNKNOWN ERROR during function call\n";
+    }
+    else if (ncsCode == NC_OUT_OF_MEMORY)
+    {
+        cout<<"Host out of memory\n";
+    }
+    else if (ncsCode == NC_DEVICE_NOT_FOUND)
+    {
+        cout<<"Device not found\n";
+    }
+    else if (ncsCode == NC_INVALID_PARAMETERS)
+    {
+        cout<<"Invalid function parameters\n";
+    }
+    else if (ncsCode == NC_TIMEOUT)
+    {
+        cout<<"Timeout in device communication\n";
+    }
+    else if (ncsCode == NC_MVCMD_NOT_FOUND)
+    {
+        cout<<"Device boot file not found (installation is broken)\n";
+    }
+    else if (ncsCode == NC_NOT_ALLOCATED)
+    {
+        cout<<"Graph or FIFO not allocated\n";
+    }
+    else if (ncsCode == NC_UNAUTHORIZED)
+    {
+        cout<<"Unauthorized operation attempted\n";
+    }
+    else if (ncsCode == NC_UNSUPPORTED_GRAPH_FILE)
+    {
+        cout<<"Unsupported graph file (compiled with different NCSDK version)\n";
+    }
+    else if (ncsCode == NC_UNSUPPORTED_FEATURE)
+    {
+        cout<<"Operation not supported by firmware\n";
+    }
+    else if (ncsCode == NC_INVALID_DATA_LENGTH)
+    {
+        cout<<"Invalid data length\n";
+    }
+    else if (ncsCode == NC_INVALID_HANDLE)
+    {
+        cout<<"Invalid data length passed to function\n";
+    }
+    else
+    {
+        cout<<"Some other error occured, unknown code "<<ncsCode<<endl;
+    }
+}
 
