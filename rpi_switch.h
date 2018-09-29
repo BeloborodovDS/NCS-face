@@ -1,0 +1,1 @@
+#define USE_RASPICAM 0

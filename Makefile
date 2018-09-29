@@ -4,7 +4,22 @@ WRAPPER_FILES := ./wrapper/ncs_wrapper.cpp
 #Uncomment the following line to use NCSDKv1
 #WRAPPER_FILES := ./wrapper/fp16.c ./wrapper/ncs_wrapper_v1.cpp
 
+#Use rpi_switch.h as config, setup raspicam lib
+USE_RPI := $(shell cat rpi_switch.h | sed -n 's:\#define USE_RASPICAM \([0,1]\):\1:p')
+ifeq ($(USE_RPI), 0)
+	RPI_LIBS := 
+else
+	RPI_LIBS := -lraspicam
+endif
+
+
 all: graph_ssd demo_ssd
+
+#switch to desktop/raspberry mode (just edit rpi_switch.h)
+switch_desk:
+	sed -i 's:\#define USE_RASPICAM 1:\#define USE_RASPICAM 0:' rpi_switch.h
+switch_rpi:
+	sed -i 's:\#define USE_RASPICAM 0:\#define USE_RASPICAM 1:' rpi_switch.h
 convert_yolo:
 	# face model is from: https://github.com/dannyblueliu/YOLO-version-2-Face-detection
 	#1) enter folder with models
@@ -43,7 +58,7 @@ demo_yolo:
 	-o demo \
 	-lopencv_core -lopencv_imgproc -lopencv_highgui \
 	-lopencv_video \
-	-lmvnc \
+	-lmvnc $(RPI_LIBS) \
 	`pkg-config opencv --cflags --libs` 
 demo_ssd:
 	g++ \
@@ -54,7 +69,7 @@ demo_ssd:
 	-o demo \
 	-lopencv_core -lopencv_imgproc -lopencv_highgui \
 	-lopencv_video \
-	-lmvnc \
+	-lmvnc $(RPI_LIBS) \
 	`pkg-config opencv --cflags --libs`
 profile: convert
 	cd models/face; \
