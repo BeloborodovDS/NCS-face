@@ -12,6 +12,7 @@ else
 	RPI_LIBS := -lraspicam
 endif
 
+OPENVINO_PATH := "/opt/intel/computer_vision_sdk"
 
 all: graph_ssd demo_ssd
 
@@ -71,6 +72,26 @@ demo_ssd:
 	-lopencv_video \
 	-lmvnc $(RPI_LIBS) \
 	`pkg-config opencv --cflags --libs`
+model_vino:
+	cp $(OPENVINO_PATH)/deployment_tools/intel_models/face-detection-retail-0004/FP16/face-detection-retail-0004.bin \
+	./models/face/vino.bin; \
+	cp $(OPENVINO_PATH)/deployment_tools/intel_models/face-detection-retail-0004/FP16/face-detection-retail-0004.xml \
+	./models/face/vino.xml
+model_vino_big:
+	cp $(OPENVINO_PATH)/deployment_tools/intel_models/face-detection-adas-0001/FP16/face-detection-adas-0001.bin \
+	./models/face/vino.bin; \
+	cp $(OPENVINO_PATH)/deployment_tools/intel_models/face-detection-adas-0001/FP16/face-detection-adas-0001.xml \
+	./models/face/vino.xml
+demo_vino: 
+	g++ -fPIC \
+	-I/usr/include -I. -I/opt/intel/computer_vision_sdk/deployment_tools/inference_engine/include \
+	-L/usr/lib/x86_64-linux-gnu \
+	-L/usr/local/lib \
+	-L/opt/intel/computer_vision_sdk/deployment_tools/inference_engine/lib/ubuntu_16.04/intel64 \
+	vino.cpp \
+	-o demo -std=c++11 \
+	`pkg-config opencv --cflags --libs` \
+	-ldl -linference_engine
 profile: convert
 	cd models/face; \
 	mvNCProfile yolo-face-fix.prototxt -w yolo-face.caffemodel -s 12; \

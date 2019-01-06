@@ -5,4 +5,8 @@ models/face/output_expected.npy
 models/face/output_report.html
 models/face/yolo-face.caffemodel
 models/face/yolo-face_final.weights
+models/face/Fathom_expected.npy
+models/face/vino.bin
+models/face/vino.xml
+
 
