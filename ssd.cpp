@@ -160,4 +160,7 @@ int main()
     double time = (getTickCount()-start)/getTickFrequency();
     cout<<"Frame rate: "<<nframes/time<<endl;
     
+    cap.release();
+    
+    return 0;
 }

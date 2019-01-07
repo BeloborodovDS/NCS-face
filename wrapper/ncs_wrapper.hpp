@@ -12,8 +12,8 @@ class NCSWrapper
 {
 public:
     /* Construct wrapper
-     * @param input_size: total network input 
-     * @param output_size: total network output_size
+     * @param input_num: total network input 
+     * @param output_num: total network output_size
      */
     NCSWrapper(unsigned int input_num, unsigned int output_num, bool is_verbose=true);
     

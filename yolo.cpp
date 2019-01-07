@@ -87,8 +87,8 @@ int main()
         //load data to NCS
         if(!NCS.load_tensor_nowait((float*)resized16f.data))
         {
-        NCS.print_error_code();
-        break;
+	    NCS.print_error_code();
+	    break;
         }
         
         //draw boxes and render frame
@@ -142,4 +142,7 @@ int main()
     double time = (getTickCount()-start)/getTickFrequency();
     cout<<"Frame rate: "<<nframes/time<<endl;
     
+    cap.release();
+
+    return 0;
 }

@@ -57,8 +57,6 @@ demo_yolo:
 	-L/usr/local/lib \
 	yolo.cpp detection_layer.c $(WRAPPER_FILES) \
 	-o demo \
-	-lopencv_core -lopencv_imgproc -lopencv_highgui \
-	-lopencv_video \
 	-lmvnc $(RPI_LIBS) \
 	`pkg-config opencv --cflags --libs` 
 demo_ssd:
@@ -68,8 +66,6 @@ demo_ssd:
 	-L/usr/local/lib \
 	ssd.cpp $(WRAPPER_FILES) \
 	-o demo \
-	-lopencv_core -lopencv_imgproc -lopencv_highgui \
-	-lopencv_video \
 	-lmvnc $(RPI_LIBS) \
 	`pkg-config opencv --cflags --libs`
 model_vino:
