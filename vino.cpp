@@ -126,7 +126,6 @@ int main()
       cvtColor(frame, frame, CV_BGRA2BGR);
     flip(frame, frame, 1);
     resize(frame, resized, Size(NCS.netInputWidth, NCS.netInputHeight));
-    //cvtColor(resized, resized, CV_BGR2RGB);
     
     if (!NCS.get_result(result))
     {
@@ -137,7 +136,7 @@ int main()
     //get boxes and probs
     probs.clear();
     rects.clear();
-    get_detection_boxes(result, NCS.maxNumDetectedFaces, resized.cols, resized.rows, 0.5, probs, rects);
+    get_detection_boxes(result, NCS.maxNumDetectedFaces, resized.cols, resized.rows, 0.2, probs, rects);
     
     //Exit if any key pressed
     if (waitKey(1)!=-1)

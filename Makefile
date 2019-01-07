@@ -78,6 +78,16 @@ model_vino_big:
 	./models/face/vino.bin; \
 	cp $(OPENVINO_PATH)/deployment_tools/intel_models/face-detection-adas-0001/FP16/face-detection-adas-0001.xml \
 	./models/face/vino.xml
+model_vino_custom:
+	mo.py \
+	--framework caffe \
+	--input_proto models/face/ssd-face.prototxt \
+	--input_model models/face/ssd-face.caffemodel \
+	--output_dir models/face \
+	--model_name vino \
+	--mean_values [127.5,127.5,127.5] \
+	--scale_values [127.5,127.5,127.5] \
+	--data_type FP16
 demo_vino: 
 	g++ -fPIC \
 	-I/usr/include -I. \
