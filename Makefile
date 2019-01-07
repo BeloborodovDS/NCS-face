@@ -84,15 +84,16 @@ model_vino_big:
 	./models/face/vino.xml
 demo_vino: 
 	g++ -fPIC \
-	-I/usr/include -I. -I/opt/intel/computer_vision_sdk/deployment_tools/inference_engine/include \
+	-I/usr/include -I. \
+	-I$(OPENVINO_PATH)/deployment_tools/inference_engine/include \
 	-L/usr/lib/x86_64-linux-gnu \
 	-L/usr/local/lib \
-	-L/opt/intel/computer_vision_sdk/deployment_tools/inference_engine/lib/ubuntu_16.04/intel64 \
-	vino.cpp \
+	-L$(OPENVINO_PATH)/deployment_tools/inference_engine/lib/ubuntu_16.04/intel64 \
+	vino.cpp wrapper/vino_wrapper.cpp \
 	-o demo -std=c++11 \
 	`pkg-config opencv --cflags --libs` \
-	-ldl -linference_engine
-profile: convert
+	-ldl -linference_engine $(RPI_LIBS)
+profile_yolo: convert_yolo
 	cd models/face; \
 	mvNCProfile yolo-face-fix.prototxt -w yolo-face.caffemodel -s 12; \
 	cd ../..
