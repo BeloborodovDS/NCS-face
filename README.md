@@ -1,6 +1,7 @@
 # Collection of face detection demos for Movidius Neural Compute Stick 
 
 Desktop / Raspberry Pi
+
 NCSDK / NCSDK2 / OpenVINO
 
 ### NOTE
@@ -25,7 +26,6 @@ For OpenVINO demos, <a href="https://software.intel.com/en-us/OpenVINO-toolkit" 
 |Custom SSD with NCSDK2		 	|10.8	 |9.3	 |7.2		|
 |Custom longrange SSD with NCSDK2	|11.8	 |10.0	 |7.3		|
 |YOLO v2 with NCSDK2		 	|5.3	 |4.6	 |3.6		|
-|---				 	|---	 |---	 |---		|
 |Custom SSD with OpenVINO	 	|10.6	 |9.9	 |todo		|
 |OpenVINO face-detection-retail-0004	|15.6	 |14.2	 |todo		|
 |OpenVINO face-detection-adas-0001	|5.8	 |5.5	 |todo		|
