@@ -1,4 +1,7 @@
-# Face detection demo for Movidius Neural Compute Stick (Desktop or Raspberry Pi)
+# Collection of face detection demos for Movidius Neural Compute Stick 
+
+Desktop / Raspberry Pi
+NCSDK / NCSDK2 / OpenVINO
 
 ### NOTE
 This project was upgraded to use NCSDK v2, which is not backward-compatible. Files for compiling with NCSDK v1 are also provided: you will have to edit `#include <./wrapper/ncs_wrapper.hpp>` in `yolo.cpp` and `ssd.cpp`, as well as `WRAPPER_FILES` variable in `Makefile`.
@@ -6,17 +9,30 @@ This project was upgraded to use NCSDK v2, which is not backward-compatible. Fil
 ## Intro
 
 This project is a C++ face detection demo for NCS (both desktop Ubuntu and Raspberry Pi with Raspbian Stretch), with different models: 
-* <a href="https://github.com/BeloborodovDS/MobilenetSSDFace" target="_blank"> My Mobilenet-SSD models</a>
-* <a href="https://github.com/dannyblueliu/YOLO-version-2-Face-detection" target="_blank"> YOLO v2 model </a> 
+* <a href="https://github.com/BeloborodovDS/MobilenetSSDFace" target="_blank"> My Mobilenet-SSD detector</a>
+* <a href="https://github.com/BeloborodovDS/MobilenetSSDFace" target="_blank"> My Mobilenet-SSD longrange detector</a> (a bit faster, only for small faces)
+* <a href="https://github.com/dannyblueliu/YOLO-version-2-Face-detection" target="_blank"> YOLO v2 model from this repo </a> (converted from Darknet to Caffe) 
+* Two face detectors from <a href="https://software.intel.com/en-us/OpenVINO-toolkit" target="_blank"> Intel OpenVINO</a>, namely face-detection-retail-0004 and face-detection-adas-0001
 
+To build and run NCSDK demo, <a href="https://github.com/movidius/ncsdk" target="_blank">NCSDK 2</a> and OpenCV are needed.
 
-To build and run this demo <a href="https://developer.movidius.com/start" target="_blank">NCSDK</a> and OpenCV are needed.
+For OpenVINO demos, <a href="https://software.intel.com/en-us/OpenVINO-toolkit" target="_blank"> Intel OpenVINO SDK</a> is needed. 
 
-| Model 		| FPS (NCS + Core i3) | FPS (NCS with USB cable + RPi 2B) |
-|---			|---		|---|
-|Mobilenet-SSD		|10.4		|7.18|
-|Mobilenet-SSD longrange|11.4		|7.30|
-|YOLO v2		|5.1		|3.63|
+### Performance (FPS)
+
+| Model 			 	| USB-3 | USB-2 | Raspberry Pi |
+|---				 	|---	 |---	 |---		|
+|Custom SSD with NCSDK2		 	|10.8	 |9.3	 |7.2		|
+|Custom longrange SSD with NCSDK2	|11.8	 |10.0	 |7.3		|
+|YOLO v2 with NCSDK2		 	|5.3	 |4.6	 |3.6		|
+|---				 	|---	 |---	 |---		|
+|Custom SSD with OpenVINO	 	|10.6	 |9.9	 |todo		|
+|OpenVINO face-detection-retail-0004	|15.6	 |14.2	 |todo		|
+|OpenVINO face-detection-adas-0001	|5.8	 |5.5	 |todo		|
+
+* "USB 3" setting: Core i7 / Ubuntu 16 VM / Neural Compute Stick at USB-3 
+* "USB 3" setting: Core i7 / Ubuntu 16 VM / Neural Compute Stick with USB-2 cord at USB-3 (so effective communication is USB-2)
+* "Raspberry Pi" setting: Raspberry Pi 2B / Raspbian Stretch / Neural Compute Stick with USB-2 cord at USB-2 
 
 ## Compiling for desktop or Raspberry Pi
 
@@ -31,9 +47,9 @@ For convenience, two compiled graph files are provided (YOLO and full SSD). If t
 
 NOTE: YOLO detector is quite sensitive to light conditions, and I failed to get good results on Raspberry. SSD works fine, however.
 
-## Mobilenet-SSD
+## Custom Mobilenet-SSD with NCSDK2
 
-To run Mobilenet-SSD face detection demo (desktop):
+To run custom Mobilenet-SSD face detection demo (desktop):
 ~~~
 make graph_ssd
 make demo_ssd
@@ -61,7 +77,33 @@ make demo_ssd
 ./demo
 ~~~ 
 
-## YOLO v2
+## Running detectors with OpenVINO
+
+First, choose a model:
+~~~
+make model_vino_custom
+~~~
+to compile custom (my) Mobilenet-SSD detector to OpenVINO format, or
+
+~~~
+make model_vino
+~~~
+to copy face-detection-retail-0004 detector from OpenVINO installation folder, or
+
+~~~
+make model_vino_big
+~~~
+to copy face-detection-adas-0001 detector from OpenVINO installation folder.
+
+Then compile and run the demo:
+~~~
+make demo_vino
+./demo
+~~~
+
+Do not forget to update OpenVINO installation path in Makefile, if necessary. Also, you can switch between models without recompiling the demo.
+
+## YOLO v2 with NCSDK2
 
 Model is converted from Darknet to Caffe format with <a href="https://github.com/marvis/pytorch-caffe-darknet-convert" target="_blank">Pytorch\Caffe\Darknet converter</a> in a Docker container and then compiled for NCS. You can skip Docker conversion if you download converted model from my drive.
 
