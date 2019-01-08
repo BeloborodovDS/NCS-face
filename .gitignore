@@ -9,5 +9,6 @@ models/face/Fathom_expected.npy
 models/face/vino.bin
 models/face/vino.xml
 models/face/vino.mapping
+models/face/ssd-vino-custom.mapping
 
 

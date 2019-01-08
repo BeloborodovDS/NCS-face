@@ -84,10 +84,12 @@ model_vino_custom:
 	--input_proto models/face/ssd-face.prototxt \
 	--input_model models/face/ssd-face.caffemodel \
 	--output_dir models/face \
-	--model_name vino \
+	--model_name ssd-vino-custom \
 	--mean_values [127.5,127.5,127.5] \
 	--scale_values [127.5,127.5,127.5] \
-	--data_type FP16
+	--data_type FP16; \
+	cp ./models/face/ssd-vino-custom.xml ./models/face/vino.xml; \
+	cp ./models/face/ssd-vino-custom.bin ./models/face/vino.bin
 demo_vino: 
 	g++ -fPIC \
 	-I/usr/include -I. \
