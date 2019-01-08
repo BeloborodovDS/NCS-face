@@ -8,11 +8,14 @@ WRAPPER_FILES := ./wrapper/ncs_wrapper.cpp
 USE_RPI := $(shell cat rpi_switch.h | sed -n 's:\#define USE_RASPICAM \([0,1]\):\1:p')
 ifeq ($(USE_RPI), 0)
 	RPI_LIBS := 
+	RPI_ARCH := 
 else
 	RPI_LIBS := -lraspicam
+	RPI_ARCH := -march=armv7-a 
 endif
 
-OPENVINO_PATH := "/opt/intel/computer_vision_sdk"
+OPENVINO_PATH := /opt/intel/computer_vision_sdk
+OPENVINO_PATH_RPI := /home/pi/Work/libs/inference_engine_vpu_arm
 
 all: graph_ssd demo_ssd
 
@@ -90,13 +93,32 @@ model_vino_custom:
 	--data_type FP16; \
 	cp ./models/face/ssd-vino-custom.xml ./models/face/vino.xml; \
 	cp ./models/face/ssd-vino-custom.bin ./models/face/vino.bin
+model_vino_rpi:
+	wget --no-check-certificate \
+	https://download.01.org/openvinotoolkit/2018_R4/open_model_zoo/face-detection-retail-0004/FP16/face-detection-retail-0004.xml \
+	-O ./models/face/vino.xml; \
+	wget --no-check-certificate \
+	https://download.01.org/openvinotoolkit/2018_R4/open_model_zoo/face-detection-retail-0004/FP16/face-detection-retail-0004.bin \
+	-O ./models/face/vino.bin
+model_vino_big_rpi:
+	wget --no-check-certificate \
+	https://download.01.org/openvinotoolkit/2018_R4/open_model_zoo/face-detection-adas-0001/FP16/face-detection-adas-0001.xml \
+	-O ./models/face/vino.xml; \
+	wget --no-check-certificate \
+	https://download.01.org/openvinotoolkit/2018_R4/open_model_zoo/face-detection-adas-0001/FP16/face-detection-adas-0001.bin \
+	-O ./models/face/vino.bin
+model_vino_custom_rpi:
+	cp ./models/face/ssd-vino-custom.xml ./models/face/vino.xml; \
+	cp ./models/face/ssd-vino-custom.bin ./models/face/vino.bin
 demo_vino: 
-	g++ -fPIC \
+	g++ $(RPI_ARCH) \
 	-I/usr/include -I. \
 	-I$(OPENVINO_PATH)/deployment_tools/inference_engine/include \
+	-I$(OPENVINO_PATH_RPI)/deployment_tools/inference_engine/include \
 	-L/usr/lib/x86_64-linux-gnu \
 	-L/usr/local/lib \
 	-L$(OPENVINO_PATH)/deployment_tools/inference_engine/lib/ubuntu_16.04/intel64 \
+	-L$(OPENVINO_PATH_RPI)/deployment_tools/inference_engine/lib/raspbian_9/armv7l \
 	vino.cpp wrapper/vino_wrapper.cpp \
 	-o demo -std=c++11 \
 	`pkg-config opencv --cflags --libs` \

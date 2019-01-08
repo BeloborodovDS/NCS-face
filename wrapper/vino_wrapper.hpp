@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <string>
 
 #include <opencv2/opencv.hpp>
 
@@ -10,6 +11,7 @@
 
 using namespace InferenceEngine;
 using namespace cv;
+using namespace std;
 
 class NCSWrapper 
 {

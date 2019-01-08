@@ -1,6 +1,7 @@
 #include "vino_wrapper.hpp"
 
 #include <iostream>
+#include <string>
 
 #include <opencv2/opencv.hpp>
 
@@ -50,7 +51,7 @@ bool NCSWrapper::load_file(string filename)
   catch (...)
   {
     if (verbose)
-      cout<<"Cannot open natwork files: "<<filename+".xml"<< " or "<<filename+".bin"<<endl;
+      cout<<"Cannot open network files: "<<filename+".xml"<< " or "<<filename+".bin"<<endl;
     return false;
   }
   
@@ -133,10 +134,10 @@ bool NCSWrapper::load_tensor_nowait(Mat &data)
   unsigned char* blobData = inputBlob->buffer().as<unsigned char*>();
   
   //copy from resized frame to network input
+  int wh = netInputHeight*netInputWidth;
   for (int c = 0; c < netInputChannels; c++)
-    for (int h = 0; h < netInputHeight; h++)
-      for (int w = 0; w < netInputWidth; w++)
-	  blobData[c * netInputWidth * netInputHeight + h * netInputWidth + w] = data.at<cv::Vec3b>(h, w)[c];
+    for (int h = 0; h < wh; h++)
+	  blobData[c * wh + h] = data.data[netInputChannels*h + c];
   
   //start asynchronous inference
   request->StartAsync();

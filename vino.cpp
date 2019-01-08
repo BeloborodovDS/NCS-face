@@ -2,6 +2,7 @@
 
 #include <opencv2/opencv.hpp>
 #include <iostream>
+#include <string>
 
 #include "wrapper/vino_wrapper.hpp"
 
@@ -149,7 +150,11 @@ int main()
   double time = (getTickCount()-start)/getTickFrequency();
   cout<<"Frame rate: "<<nframes/time<<endl;
   
-  cap.release();
+#if USE_RASPICAM
+    Camera.release();
+#else
+    cap.release();
+#endif
 
   return 0;
 }

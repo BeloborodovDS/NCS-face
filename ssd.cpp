@@ -160,7 +160,11 @@ int main()
     double time = (getTickCount()-start)/getTickFrequency();
     cout<<"Frame rate: "<<nframes/time<<endl;
     
+#if USE_RASPICAM
+    Camera.release();
+#else
     cap.release();
+#endif
     
     return 0;
 }

@@ -26,12 +26,12 @@ For OpenVINO demos, <a href="https://software.intel.com/en-us/OpenVINO-toolkit" 
 |Custom SSD with NCSDK2		 	|10.8	 |9.3	 |7.2		|
 |Custom longrange SSD with NCSDK2	|11.8	 |10.0	 |7.3		|
 |YOLO v2 with NCSDK2		 	|5.3	 |4.6	 |3.6		|
-|Custom SSD with OpenVINO	 	|10.6	 |9.9	 |todo		|
-|OpenVINO face-detection-retail-0004	|15.6	 |14.2	 |todo		|
-|OpenVINO face-detection-adas-0001	|5.8	 |5.5	 |todo		|
+|Custom SSD with OpenVINO	 	|10.6	 |9.9	 |7.9		|
+|OpenVINO face-detection-retail-0004	|15.6	 |14.2	 |9.3		|
+|OpenVINO face-detection-adas-0001	|5.8	 |5.5	 |3.9		|
 
-* "USB 3" setting: Core i7 / Ubuntu 16 VM / Neural Compute Stick at USB-3 
-* "USB 3" setting: Core i7 / Ubuntu 16 VM / Neural Compute Stick with USB-2 cord at USB-3 (so effective communication is USB-2)
+* "USB-3" setting: Core i7 / Ubuntu 16 VM / Neural Compute Stick at USB-3 
+* "USB-2" setting: Core i7 / Ubuntu 16 VM / Neural Compute Stick with USB-2 cord at USB-3 (so effective communication is USB-2)
 * "Raspberry Pi" setting: Raspberry Pi 2B / Raspbian Stretch / Neural Compute Stick with USB-2 cord at USB-2 
 
 ## Compiling for desktop or Raspberry Pi
@@ -101,7 +101,19 @@ make demo_vino
 ./demo
 ~~~
 
-Do not forget to update OpenVINO installation path in Makefile, if necessary. Also, you can switch between models without recompiling the demo.
+Do not forget to update OpenVINO installation path in Makefile, if necessary. 
+Also, you can switch between models without recompiling the demo.
+
+To run on Raspberry Pi, use model targets with "rpi" suffix: model_vino_rpi, model_vino_big_rpi 
+(downloaded instead of being copied, since there are no models in Raspbian OpenVINO distribution) 
+and model_vino_custom_rpi (not converted, just copied from inside current repo, since mo.py is also unavailable).
+
+Then switch, compile and run the demo:
+~~~
+make switch_rpi
+make demo_vino
+./demo
+~~~
 
 ## YOLO v2 with NCSDK2
 
